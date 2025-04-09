@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Qr, Smartphone, Camera, Play, ArrowRight } from "lucide-react";
+import { QrCode, Smartphone, Camera, Play, ArrowRight } from "lucide-react";
 import { Button } from '@/components/ui/button';
 
 interface ARPreviewProps {
@@ -28,7 +28,7 @@ export default function ARPreview({ arUrl, isActive }: ARPreviewProps) {
             <div className="text-center space-y-4">
               <div className="bg-black/20 rounded-xl p-8 flex justify-center">
                 <div className="p-4 bg-white rounded-lg inline-block">
-                  <Qr className="h-20 w-20 text-black" />
+                  <QrCode className="h-20 w-20 text-black" />
                 </div>
               </div>
               <p className="text-white/70">Scan this QR code with the ShadowStamp mobile app</p>

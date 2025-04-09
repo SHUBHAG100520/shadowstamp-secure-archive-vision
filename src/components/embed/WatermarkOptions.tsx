@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -32,7 +31,6 @@ export default function WatermarkOptions({ onApply, disabled = false, selectedFi
   const [processProgress, setProcessProgress] = useState<number>(0);
   const [visualizationData, setVisualizationData] = useState<any[]>([]);
   
-  // Reset form when file changes
   useEffect(() => {
     if (!selectedFile) {
       setBlockchainTxHash("");
@@ -41,10 +39,8 @@ export default function WatermarkOptions({ onApply, disabled = false, selectedFi
     }
   }, [selectedFile]);
 
-  // Generate visualization data based on selected algorithm
   useEffect(() => {
     if (selectedFile && algorithm) {
-      // Simulate algorithm visualization data based on selected algorithm
       if (algorithm === "dct") {
         setVisualizationData([
           { name: 'Low Freq', original: 85, watermarked: 80 },
@@ -80,7 +76,6 @@ export default function WatermarkOptions({ onApply, disabled = false, selectedFi
       fileType: selectedFile.type
     };
     
-    // Simulate watermarking process with stages
     const simulateProcess = () => {
       const stages = [
         { name: "Analyzing file structure", progress: 10 },
@@ -102,7 +97,6 @@ export default function WatermarkOptions({ onApply, disabled = false, selectedFi
         } else {
           clearInterval(processInterval);
           
-          // If blockchain is enabled, simulate blockchain registration
           if (useBlockchain) {
             setProcessStage("Recording to blockchain");
             setProcessProgress(95);
@@ -115,7 +109,6 @@ export default function WatermarkOptions({ onApply, disabled = false, selectedFi
               setProcessStage("Watermark embedding complete");
               setProcessProgress(100);
               
-              // Complete the process
               setTimeout(() => {
                 onApply(options);
                 setProcessing(false);
@@ -125,7 +118,6 @@ export default function WatermarkOptions({ onApply, disabled = false, selectedFi
             setProcessStage("Watermark embedding complete");
             setProcessProgress(100);
             
-            // Complete the process
             setTimeout(() => {
               onApply(options);
               setProcessing(false);
@@ -135,7 +127,6 @@ export default function WatermarkOptions({ onApply, disabled = false, selectedFi
       }, 800);
     };
     
-    // Start the simulation after a short delay
     setTimeout(simulateProcess, 500);
   };
 
@@ -299,7 +290,7 @@ export default function WatermarkOptions({ onApply, disabled = false, selectedFi
               <span className="text-sm text-white/80">{processStage}</span>
               <span className="text-sm text-white/80">{processProgress}%</span>
             </div>
-            <Progress value={processProgress} className="h-2 bg-white/10" indicatorClassName="bg-shadow-accent" />
+            <Progress value={processProgress} className="h-2 bg-white/10" />
           </div>
         )}
 
