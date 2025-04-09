@@ -15,6 +15,7 @@ export default function FileUploader({ onFileSelected, watermarkApplied = false,
   const [dragActive, setDragActive] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const fileInputRef = useState<HTMLInputElement | null>(null);
 
   const handleDrag = (e: React.DragEvent) => {
     e.preventDefault();
@@ -38,12 +39,14 @@ export default function FileUploader({ onFileSelected, watermarkApplied = false,
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    console.log("File input change detected:", e.target.files);
     if (e.target.files && e.target.files[0]) {
       handleFile(e.target.files[0]);
     }
   };
 
   const handleFile = (file: File) => {
+    console.log("Handling file:", file.name, file.type);
     setSelectedFile(file);
     onFileSelected(file);
 
@@ -90,6 +93,13 @@ export default function FileUploader({ onFileSelected, watermarkApplied = false,
     }
   };
 
+  const openFileDialog = () => {
+    const fileInput = document.getElementById('file-upload') as HTMLInputElement;
+    if (fileInput) {
+      fileInput.click();
+    }
+  };
+
   // Clean up object URL on unmount
   useEffect(() => {
     return () => {
@@ -113,11 +123,13 @@ export default function FileUploader({ onFileSelected, watermarkApplied = false,
           onDragOver={handleDrag}
           onDragLeave={handleDrag}
           onDrop={handleDrop}
+          onClick={selectedFile ? undefined : openFileDialog}
           className={cn(
             "border-2 border-dashed rounded-lg p-6 flex flex-col items-center justify-center min-h-[200px] transition-colors duration-200",
             dragActive ? "border-shadow-accent bg-shadow-accent/5" : "border-white/10",
             selectedFile ? "bg-white/5" : "",
-            watermarkApplied ? "border-green-500/50" : ""
+            watermarkApplied ? "border-green-500/50" : "",
+            !selectedFile && "cursor-pointer hover:bg-white/5"
           )}
         >
           {selectedFile ? (
@@ -156,18 +168,23 @@ export default function FileUploader({ onFileSelected, watermarkApplied = false,
               <Upload className="h-10 w-10 text-shadow-accent mb-2" />
               <p className="text-white font-medium mb-2">Drag and drop your file here</p>
               <p className="text-white/60 text-sm mb-4">or click to browse your files</p>
-              <label htmlFor="file-upload">
-                <Button variant="outline" className="border-shadow-accent/50 text-shadow-accent hover:bg-shadow-accent/10 hover:text-white cursor-pointer">
-                  Select File
-                </Button>
-                <input 
-                  id="file-upload" 
-                  type="file" 
-                  className="hidden" 
-                  onChange={handleFileChange}
-                  accept="image/*, application/pdf" 
-                />
-              </label>
+              <Button 
+                variant="outline" 
+                className="border-shadow-accent/50 text-shadow-accent hover:bg-shadow-accent/10 hover:text-white cursor-pointer"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  openFileDialog();
+                }}
+              >
+                Select File
+              </Button>
+              <input 
+                id="file-upload" 
+                type="file" 
+                className="hidden" 
+                onChange={handleFileChange}
+                accept="image/*, application/pdf" 
+              />
             </div>
           )}
         </div>

@@ -2,20 +2,10 @@
 import Navbar from "@/components/layout/Navbar";
 import FileUploader from "@/components/embed/FileUploader";
 import WatermarkOptions from "@/components/embed/WatermarkOptions";
+import ARPreview from "@/components/embed/ARPreview";
+import StatisticsGraph from "@/components/embed/StatisticsGraph";
 import { useState } from "react";
 import { useToast } from "@/components/ui/use-toast";
-import { ChartContainer } from "@/components/ui/chart";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-
-// Demo data for embedded vs extracted statistics
-const statisticsData = [
-  { name: 'Jan', embedded: 4, extracted: 2 },
-  { name: 'Feb', embedded: 6, extracted: 3 },
-  { name: 'Mar', embedded: 8, extracted: 5 },
-  { name: 'Apr', embedded: 10, extracted: 7 },
-  { name: 'May', embedded: 15, extracted: 12 },
-  { name: 'Jun', embedded: 18, extracted: 14 },
-];
 
 const Embed = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -25,6 +15,7 @@ const Embed = () => {
   const { toast } = useToast();
 
   const handleFileSelected = (file: File) => {
+    console.log("File selected:", file);
     setSelectedFile(file);
     setWatermarkApplied(false);
     setDownloadUrl(null);
@@ -97,11 +88,19 @@ const Embed = () => {
         <h1 className="text-3xl font-bold mb-8 text-white">Embed Watermark</h1>
         
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <FileUploader 
-            onFileSelected={handleFileSelected} 
-            watermarkApplied={watermarkApplied}
-            downloadUrl={downloadUrl || undefined}
-          />
+          <div className="space-y-6">
+            <FileUploader 
+              onFileSelected={handleFileSelected} 
+              watermarkApplied={watermarkApplied}
+              downloadUrl={downloadUrl || undefined}
+            />
+            {watermarkData?.useAR && (
+              <ARPreview 
+                isActive={watermarkApplied} 
+                arUrl={watermarkData?.watermarkType === 'link' ? watermarkData.arUrl : undefined} 
+              />
+            )}
+          </div>
           <WatermarkOptions 
             onApply={handleWatermarkApplied} 
             disabled={!selectedFile} 
@@ -111,33 +110,12 @@ const Embed = () => {
         
         {watermarkApplied && (
           <div className="mt-10">
-            <h2 className="text-2xl font-bold mb-4 text-white">File Security Statistics</h2>
+            <h2 className="text-2xl font-bold mb-4 text-white">File Security Analytics</h2>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              <div className="bg-white/5 border border-white/10 rounded-lg p-4">
-                <h3 className="text-lg font-medium mb-3 text-white">Embedded vs. Extracted Documents</h3>
-                <div className="h-[300px]">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart
-                      data={statisticsData}
-                      margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
-                    >
-                      <CartesianGrid strokeDasharray="3 3" stroke="#333" />
-                      <XAxis dataKey="name" stroke="#aaa" />
-                      <YAxis stroke="#aaa" />
-                      <Tooltip 
-                        contentStyle={{ background: '#222', border: '1px solid #444', borderRadius: '4px' }}
-                        labelStyle={{ color: '#fff' }}
-                      />
-                      <Legend />
-                      <Bar dataKey="embedded" name="Embedded" fill="#8884d8" />
-                      <Bar dataKey="extracted" name="Extracted" fill="#82ca9d" />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-              </div>
+              <StatisticsGraph algorithm={watermarkData?.algorithm || 'dct'} />
               
               {watermarkData && (
-                <div className="bg-white/5 border border-white/10 rounded-lg p-6">
+                <div className="bg-white/5 border border-white/10 rounded-lg p-6 mt-4">
                   <h3 className="text-lg font-medium mb-4 text-white">Watermark Details</h3>
                   <div className="space-y-3">
                     <div className="grid grid-cols-2 gap-2">
