@@ -1,16 +1,14 @@
-
 import { useState } from 'react';
 import Navbar from "@/components/layout/Navbar";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { File, FileImage, FilePdf, Calendar, Download, Eye, Info } from "lucide-react";
+import { File, FileImage, FileText, Calendar, Download, Eye, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 const Dashboard = () => {
   const [selectedFile, setSelectedFile] = useState<number | null>(null);
 
-  // Mock data for demo
   const files = [
     { 
       id: 1, 
@@ -62,7 +60,7 @@ const Dashboard = () => {
     if (type.startsWith('image/')) {
       return <FileImage className="h-5 w-5" />;
     } else if (type === 'application/pdf') {
-      return <FilePdf className="h-5 w-5" />;
+      return <FileText className="h-5 w-5" />;
     } else {
       return <File className="h-5 w-5" />;
     }
@@ -109,7 +107,6 @@ const Dashboard = () => {
             
             <CardContent className="p-0">
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-0">
-                {/* File List */}
                 <div className="lg:col-span-1 border-r border-white/10">
                   <TabsContent value="all" className="m-0">
                     <div className="divide-y divide-white/10">
@@ -177,7 +174,7 @@ const Dashboard = () => {
                           )}
                         >
                           <div className="mr-3 text-shadow-accent">
-                            <FilePdf className="h-5 w-5" />
+                            <FileText className="h-5 w-5" />
                           </div>
                           <div className="flex-1 min-w-0">
                             <p className="text-white font-medium truncate">{file.name}</p>
@@ -220,7 +217,6 @@ const Dashboard = () => {
                   </TabsContent>
                 </div>
                 
-                {/* File Preview & Details */}
                 <div className="lg:col-span-2 p-6">
                   {selectedFile ? (
                     <>
@@ -241,7 +237,7 @@ const Dashboard = () => {
                         <div className="flex justify-center mb-6">
                           <div className="relative">
                             <div className="h-[300px] w-[220px] bg-white/5 border border-white/10 rounded-md flex items-center justify-center">
-                              <FilePdf className="h-16 w-16 text-white/20" />
+                              <FileText className="h-16 w-16 text-white/20" />
                             </div>
                             <div className="absolute top-2 right-2 bg-shadow-accent/80 text-xs px-2 py-1 rounded text-white">
                               Protected
