@@ -2,15 +2,16 @@
 import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Upload, FileType, X, Image, FileText, Check } from "lucide-react";
+import { Upload, FileType, X, Image, FileText, Check, Download } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface FileUploaderProps {
   onFileSelected: (file: File) => void;
   watermarkApplied?: boolean;
+  downloadUrl?: string;
 }
 
-export default function FileUploader({ onFileSelected, watermarkApplied = false }: FileUploaderProps) {
+export default function FileUploader({ onFileSelected, watermarkApplied = false, downloadUrl }: FileUploaderProps) {
   const [dragActive, setDragActive] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -75,6 +76,17 @@ export default function FileUploader({ onFileSelected, watermarkApplied = false 
       return <FileText className="h-10 w-10 text-shadow-accent mb-2" />;
     } else {
       return <FileType className="h-10 w-10 text-shadow-accent mb-2" />;
+    }
+  };
+  
+  const handleDownload = () => {
+    if (downloadUrl) {
+      const a = document.createElement('a');
+      a.href = downloadUrl;
+      a.download = selectedFile ? `watermarked-${selectedFile.name}` : 'watermarked-file';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
     }
   };
 
@@ -172,8 +184,8 @@ export default function FileUploader({ onFileSelected, watermarkApplied = false 
           <Button variant="outline">
             Preview Original
           </Button>
-          <Button>
-            Download Watermarked File
+          <Button onClick={handleDownload}>
+            <Download className="h-4 w-4 mr-2" /> Download Watermarked File
           </Button>
         </CardFooter>
       )}
