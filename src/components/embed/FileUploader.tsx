@@ -1,15 +1,16 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Upload, FileType, X, Image, FileText } from "lucide-react";
+import { Upload, FileType, X, Image, FileText, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface FileUploaderProps {
   onFileSelected: (file: File) => void;
+  watermarkApplied?: boolean;
 }
 
-export default function FileUploader({ onFileSelected }: FileUploaderProps) {
+export default function FileUploader({ onFileSelected, watermarkApplied = false }: FileUploaderProps) {
   const [dragActive, setDragActive] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -57,6 +58,7 @@ export default function FileUploader({ onFileSelected }: FileUploaderProps) {
   const removeFile = () => {
     setSelectedFile(null);
     setPreviewUrl(null);
+    onFileSelected(null as unknown as File);
     // If there's a file input element, reset its value
     const fileInput = document.getElementById('file-upload') as HTMLInputElement;
     if (fileInput) {
@@ -76,6 +78,15 @@ export default function FileUploader({ onFileSelected }: FileUploaderProps) {
     }
   };
 
+  // Clean up object URL on unmount
+  useEffect(() => {
+    return () => {
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+      }
+    };
+  }, [previewUrl]);
+
   return (
     <Card className="bg-white/5 border-white/10">
       <CardHeader>
@@ -93,11 +104,12 @@ export default function FileUploader({ onFileSelected }: FileUploaderProps) {
           className={cn(
             "border-2 border-dashed rounded-lg p-6 flex flex-col items-center justify-center min-h-[200px] transition-colors duration-200",
             dragActive ? "border-shadow-accent bg-shadow-accent/5" : "border-white/10",
-            selectedFile ? "bg-white/5" : ""
+            selectedFile ? "bg-white/5" : "",
+            watermarkApplied ? "border-green-500/50" : ""
           )}
         >
           {selectedFile ? (
-            <div className="flex flex-col items-center text-center">
+            <div className="flex flex-col items-center text-center relative w-full">
               <button 
                 onClick={removeFile} 
                 className="absolute top-2 right-2 rounded-full bg-white/10 p-1 hover:bg-white/20 transition-colors"
@@ -105,6 +117,12 @@ export default function FileUploader({ onFileSelected }: FileUploaderProps) {
               >
                 <X className="h-4 w-4" />
               </button>
+              
+              {watermarkApplied && (
+                <div className="absolute top-2 left-2 bg-green-500/80 text-white text-xs px-2 py-1 rounded-md flex items-center">
+                  <Check className="h-3 w-3 mr-1" /> Watermarked
+                </div>
+              )}
               
               {previewUrl ? (
                 <img 
@@ -142,10 +160,20 @@ export default function FileUploader({ onFileSelected }: FileUploaderProps) {
           )}
         </div>
       </CardContent>
-      {selectedFile && (
+      {selectedFile && !watermarkApplied && (
         <CardFooter className="border-t border-white/10 bg-white/5 flex justify-end">
-          <Button onClick={() => console.log("Processing file:", selectedFile)}>
-            Continue
+          <Button variant="outline">
+            Preview Original
+          </Button>
+        </CardFooter>
+      )}
+      {selectedFile && watermarkApplied && (
+        <CardFooter className="border-t border-white/10 bg-white/5 flex justify-between">
+          <Button variant="outline">
+            Preview Original
+          </Button>
+          <Button>
+            Download Watermarked File
           </Button>
         </CardFooter>
       )}

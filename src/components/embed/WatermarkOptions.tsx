@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -8,26 +8,69 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { AlignLeft, Image as ImageIcon, Link } from "lucide-react";
+import { AlignLeft, Image as ImageIcon, Link, Loader2 } from "lucide-react";
 
-export default function WatermarkOptions() {
+interface WatermarkOptionsProps {
+  onApply: (options: any) => void;
+  disabled?: boolean;
+  selectedFile: File | null;
+}
+
+export default function WatermarkOptions({ onApply, disabled = false, selectedFile }: WatermarkOptionsProps) {
   const [watermarkType, setWatermarkType] = useState<string>("text");
   const [watermarkText, setWatermarkText] = useState<string>("");
   const [useBlockchain, setUseBlockchain] = useState<boolean>(true);
   const [useAR, setUseAR] = useState<boolean>(false);
   const [algorithm, setAlgorithm] = useState<string>("dct");
   const [arUrl, setArUrl] = useState<string>("");
+  const [processing, setProcessing] = useState<boolean>(false);
+  const [blockchainTxHash, setBlockchainTxHash] = useState<string>("");
   
+  // Reset form when file changes
+  useEffect(() => {
+    if (!selectedFile) {
+      setBlockchainTxHash("");
+    }
+  }, [selectedFile]);
+
   const handleSubmit = () => {
-    console.log({
+    if (disabled || !selectedFile) return;
+    
+    setProcessing(true);
+    
+    const options = {
       watermarkType,
-      watermarkText,
+      watermarkText: watermarkType === "text" ? watermarkText : "",
+      algorithm,
       useBlockchain,
       useAR,
-      algorithm,
-      arUrl
-    });
-    // This would connect to your watermarking service
+      arUrl: watermarkType === "link" ? arUrl : "",
+      fileName: selectedFile.name,
+      fileType: selectedFile.type
+    };
+    
+    // Simulate blockchain transaction
+    if (useBlockchain) {
+      console.log("Initiating blockchain transaction...");
+      setTimeout(() => {
+        const fakeHash = "0x" + Math.random().toString(16).substring(2, 10) + 
+                        Math.random().toString(16).substring(2, 10) +
+                        Math.random().toString(16).substring(2, 10);
+        setBlockchainTxHash(fakeHash);
+        
+        // Now apply watermark
+        setTimeout(() => {
+          onApply(options);
+          setProcessing(false);
+        }, 1000);
+      }, 1500);
+    } else {
+      // Just apply watermark without blockchain
+      setTimeout(() => {
+        onApply(options);
+        setProcessing(false);
+      }, 1200);
+    }
   };
 
   return (
@@ -60,13 +103,14 @@ export default function WatermarkOptions() {
                 className="bg-white/5 border-white/10 focus-visible:ring-shadow-accent"
                 value={watermarkText}
                 onChange={(e) => setWatermarkText(e.target.value)}
+                disabled={disabled || processing}
               />
             </TabsContent>
             
             <TabsContent value="image" className="pt-4">
               <div className="border-2 border-dashed border-white/10 rounded-md p-4 text-center">
                 <p className="text-white/70 mb-2">Upload an image to use as watermark</p>
-                <Button variant="outline" className="border-shadow-accent/50 text-shadow-accent hover:bg-shadow-accent/10">
+                <Button variant="outline" className="border-shadow-accent/50 text-shadow-accent hover:bg-shadow-accent/10" disabled={disabled || processing}>
                   <ImageIcon className="h-4 w-4 mr-2" /> Select Image
                 </Button>
               </div>
@@ -78,6 +122,7 @@ export default function WatermarkOptions() {
                 className="bg-white/5 border-white/10 focus-visible:ring-shadow-accent"
                 value={arUrl}
                 onChange={(e) => setArUrl(e.target.value)}
+                disabled={disabled || processing}
               />
             </TabsContent>
           </Tabs>
@@ -85,7 +130,7 @@ export default function WatermarkOptions() {
         
         <div className="space-y-2">
           <Label>Watermarking Algorithm</Label>
-          <RadioGroup defaultValue="dct" value={algorithm} onValueChange={setAlgorithm} className="flex space-x-4">
+          <RadioGroup defaultValue="dct" value={algorithm} onValueChange={setAlgorithm} className="flex space-x-4" disabled={disabled || processing}>
             <div className="flex items-center space-x-2">
               <RadioGroupItem value="dct" id="dct" />
               <Label htmlFor="dct">DCT (Discrete Cosine Transform)</Label>
@@ -108,6 +153,7 @@ export default function WatermarkOptions() {
               checked={useBlockchain} 
               onCheckedChange={setUseBlockchain}
               className="data-[state=checked]:bg-shadow-accent"
+              disabled={disabled || processing}
             />
           </div>
           
@@ -121,17 +167,39 @@ export default function WatermarkOptions() {
               checked={useAR} 
               onCheckedChange={setUseAR}
               className="data-[state=checked]:bg-shadow-accent"
+              disabled={disabled || processing}
             />
           </div>
         </div>
+
+        {blockchainTxHash && (
+          <div className="mt-4 p-3 bg-shadow-accent/10 border border-shadow-accent/20 rounded-md">
+            <Label className="text-white/90">Blockchain Transaction</Label>
+            <div className="flex items-center mt-1">
+              <code className="text-xs text-white/70 bg-white/5 p-1 rounded-md flex-1 overflow-hidden text-ellipsis">
+                {blockchainTxHash}
+              </code>
+              <Button variant="ghost" size="sm" className="ml-2 h-7 px-2">
+                <Link className="h-3.5 w-3.5" />
+              </Button>
+            </div>
+          </div>
+        )}
       </CardContent>
       <CardFooter className="border-t border-white/10 bg-white/5 flex justify-end">
         <Button 
           className="bg-shadow-accent hover:bg-shadow-accent/90 text-white"
           onClick={handleSubmit}
-          disabled={watermarkType === "text" && !watermarkText}
+          disabled={disabled || processing || (watermarkType === "text" && !watermarkText) || (watermarkType === "link" && !arUrl)}
         >
-          Embed Watermark
+          {processing ? (
+            <>
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              {useBlockchain ? "Recording on Blockchain..." : "Embedding Watermark..."}
+            </>
+          ) : (
+            "Embed Watermark"
+          )}
         </Button>
       </CardFooter>
     </Card>
